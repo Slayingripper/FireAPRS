@@ -7,6 +7,7 @@ from datetime import datetime
 from configparser import ConfigParser
 import news
 import os
+import aqi
 #get the news link
 config = ConfigParser()
 config.read('config.ini')
@@ -33,6 +34,12 @@ else:
     for message in dataset:
         #grab the latitude and longitude from the json file
         latitude = message['latitude']
+        longitude = message['longitude']
+        #latitude to string
+
+        airquality = aqi.getlocation(str(latitude),str(longitude))
+        print(airquality)
+
         #check if or statement is needed here
         print(latitude)
         newslink = news.newsfinder()
@@ -45,7 +52,6 @@ else:
             #to 2 decimal places and add 0s if needed
             latitude = round(latitude,1)
             latitude = format(latitude, '.1f')
-            longitude = message['longitude']
             longitude = float(longitude) *100
             longitude = round(longitude,1)
             longitude = format(longitude, '.1f')
