@@ -6,13 +6,14 @@ from viirs import viirsdownloader
 from datetime import datetime
 from configparser import ConfigParser
 import news
+import os
 #get the news link
 config = ConfigParser()
 config.read('config.ini')
 thedate = datetime.now().strftime('%d%H%M')
 dataset = json.load(open('viirs.json'))
 #Check if dataset is empty or not
-filesize = os.path.getsize(dataset)
+filesize = os.path.getsize("viirs.json")
 if filesize == 0:
     print("File is empty")
     print("Terminate Script")

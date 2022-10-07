@@ -16,12 +16,12 @@ def newsfinder() :
         title = entry.title
         #check if the keyword is in the title
         if keyword in title:
-            print(entry.link)
+            #print(entry.link)
             newslink = entry.link
-            print(newslink)
+            #print(newslink)
             return newslink
         else:
-            print("No link found")
+            #print("No link found")
             newslink = "No link found"
             return newslink
 
