@@ -7,7 +7,6 @@ from datetime import datetime
 from configparser import ConfigParser
 import news
 #get the news link
-newslink = news.newsfinder()
 config = ConfigParser()
 config.read('config.ini')
 thedate = datetime.now().strftime('%d%H%M')
@@ -18,7 +17,6 @@ if filesize == 0:
     print("File is empty")
     print("Terminate Script")
 else:
-
     #grab the current time and date in zulu time
     thedate = datetime.now().strftime('%d%H%M')
     #add their callsign and the password for aprs here
@@ -36,9 +34,12 @@ else:
         latitude = message['latitude']
         #check if or statement is needed here
         print(latitude)
+        newslink = news.newsfinder()
         #These latitude coordinates cause the aprs message to be sent to the wrong location
         #not sure why this happens but need to investigate more
         if latitude == "34.72600" or latitude == "34.72647":
+
+            comment = newslink
             latitude = float(latitude) *100
             #to 2 decimal places and add 0s if needed
             latitude = round(latitude,1)
