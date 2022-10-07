@@ -5,6 +5,9 @@ import time
 from viirs import viirsdownloader
 from datetime import datetime
 from configparser import ConfigParser
+import news
+#get the news link
+newslink = news.newsfinder()
 config = ConfigParser()
 config.read('config.ini')
 thedate = datetime.now().strftime('%d%H%M')
