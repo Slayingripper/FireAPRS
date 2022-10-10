@@ -24,12 +24,3 @@ def newsfinder() :
             #print("No link found")
             newslink = "No link found"
             return newslink
-
-#newsfinder()
-
-
-#search for keyword in rss feed
-#send aprs message if keyword is found
-
-
-#send aprs message if keyword is not found
