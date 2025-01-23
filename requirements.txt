@@ -1,0 +1,8 @@
+argparse
+APScheduler
+aprslib
+configparser
+feedparser
+geopy
+pandas
+requests
