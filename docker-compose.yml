@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  fire-aprs:
+    build: .
+    container_name: fire-aprs
+    restart: unless-stopped
+    volumes:
+      # Mount config file (you'll need to customize this)
+      - ./config.ini:/app/config.ini:ro
+      # Mount data directory for persistence
+      - ./data:/app/data
+      # Mount logs directory
+      - ./logs:/app/logs
+    environment:
+      - TZ=UTC
+    # Default command runs once (suitable for crontab scheduling)
+    command: ["python", "main.py"]
+    
+  # Alternative service for auto-scheduled runs
+  fire-aprs-scheduled:
+    build: .
+    container_name: fire-aprs-scheduled
+    restart: unless-stopped
+    volumes:
+      - ./config.ini:/app/config.ini:ro
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - TZ=UTC
+    # This version runs with auto-scheduling every 60 minutes
+    command: ["python", "main.py", "--autoschedule", "--interval", "60"]
+    profiles: ["scheduled"]
