@@ -17,6 +17,9 @@ FireAPRS utilizes NASA's VIIRS satellite data to monitor and plot the locations 
   - [Usage](#usage)
     - [Command-Line Arguments](#command-line-arguments)
     - [Running the Tool](#running-the-tool)
+      - [Single Run Mode (Default - Suitable for Crontab)](#single-run-mode-default---suitable-for-crontab)
+      - [Automatic Scheduling Mode](#automatic-scheduling-mode)
+      - [Crontab Setup Examples](#crontab-setup-examples)
     - [Example APRS Messages](#example-aprs-messages)
   - [Environment Variables](#environment-variables)
   - [Logging](#logging)
@@ -250,8 +253,12 @@ FireAPRS can be executed via the command line, offering flexibility through vari
 ### Command-Line Arguments
 
 - `-i`, `--interval`:  
-  **Description:** Set the interval in minutes between data fetches.  
+  **Description:** Set the interval in minutes between data fetches (only used with `--autoschedule`).  
   **Default:** `60` minutes.
+
+- `--autoschedule`:  
+  **Description:** Enable automatic scheduling. When specified, the program runs continuously with periodic execution based on the interval. Without this flag, the program runs once and exits (suitable for crontab scheduling).  
+  **Default:** Single run mode (disabled).
 
 - `--no-aqi`:  
   **Description:** Disable fetching Air Quality Index (AQI) data.  
@@ -263,49 +270,62 @@ FireAPRS can be executed via the command line, offering flexibility through vari
 
 ### Running the Tool
 
-1. **Basic Execution with All Features Enabled:**
+#### Single Run Mode (Default - Suitable for Crontab)
+
+1. **Basic Single Run with All Features Enabled:**
 
    ```bash
    python main.py
    ```
 
-   *This command fetches fire data, AQI information, and news links at the default interval of 60 minutes.*
+   *This command fetches fire data, AQI information, and news links once and exits. Perfect for crontab scheduling.*
 
-2. **Disable AQI Fetching:**
-
-   ```bash
-   python main.py --no-aqi
-   ```
-
-   *Fetches fire data and news links without retrieving AQI information.*
-
-3. **Disable News Fetching:**
-
-   ```bash
-   python main.py --no-news
-   ```
-
-   *Fetches fire data and AQI information without retrieving news links.*
-
-4. **Disable Both AQI and News Fetching:**
+2. **Single Run with Specific Options:**
 
    ```bash
    python main.py --no-aqi --no-news
    ```
 
-   *Fetches only fire data and sends minimal APRS messages.*
+   *Fetches only fire data once and exits.*
 
-5. **Set a Custom Interval (e.g., Every 5 Minutes):**
+#### Automatic Scheduling Mode
 
-   ```bash
-   python main.py --interval 5
-   ```
-
-6. **Combine Flags (e.g., Disable News and Set Interval to 30 Minutes):**
+3. **Continuous Execution with Automatic Scheduling:**
 
    ```bash
-   python main.py --no-news --interval 30
+   python main.py --autoschedule
    ```
+
+   *This runs continuously, fetching fire data, AQI information, and news links at the default interval of 60 minutes.*
+
+4. **Autoschedule with Custom Interval (e.g., Every 30 Minutes):**
+
+   ```bash
+   python main.py --autoschedule --interval 30
+   ```
+
+5. **Autoschedule with Disabled Features:**
+
+   ```bash
+   python main.py --autoschedule --no-aqi --no-news --interval 15
+   ```
+
+   *Runs continuously, fetching only fire data every 15 minutes.*
+
+#### Crontab Setup Examples
+
+For single-run mode, you can use crontab to schedule the program:
+
+```bash
+# Run every hour
+0 * * * * /usr/bin/python3 /path/to/FireAPRS/main.py
+
+# Run every 30 minutes
+*/30 * * * * /usr/bin/python3 /path/to/FireAPRS/main.py --no-news
+
+# Run every 6 hours with full logging
+0 */6 * * * /usr/bin/python3 /path/to/FireAPRS/main.py >> /var/log/fireaprs.log 2>&1
+```
 
 ### Example APRS Messages
 

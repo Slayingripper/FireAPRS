@@ -120,7 +120,7 @@ def main():
         '-i', '--interval',
         type=int,
         default=60,
-        help='Interval in minutes between data fetches (default: 60)'
+        help='Interval in minutes between data fetches (default: 60, only used with --autoschedule)'
     )
     parser.add_argument(
         '--no-aqi',
@@ -131,6 +131,11 @@ def main():
         '--no-news',
         action='store_true',
         help='Disable fetching news links'
+    )
+    parser.add_argument(
+        '--autoschedule',
+        action='store_true',
+        help='Enable automatic scheduling. Without this flag, the program runs once and exits (suitable for crontab)'
     )
     args = parser.parse_args()
 
@@ -151,7 +156,7 @@ def main():
     # Setup Logging
     setup_logging(config['logging'])
 
-    # Initial Run: Process Fire Data Immediately
+    # Process Fire Data (runs once regardless of autoschedule setting)
     try:
         process_fire_data(
             config,
@@ -159,26 +164,34 @@ def main():
             enable_news=not args.no_news
         )
     except Exception as e:
-        logging.error(f"Error during initial fire data processing: {e}")
+        logging.error(f"Error during fire data processing: {e}")
+        sys.exit(1)
 
-    # Initialize Scheduler for Periodic Execution
-    scheduler = Scheduler(
-        interval_minutes=args.interval,
-        job_func=process_fire_data,
-        config=config,
-        enable_aqi=not args.no_aqi,
-        enable_news=not args.no_news
-    )
+    # If autoschedule is enabled, start the scheduler for periodic execution
+    if args.autoschedule:
+        logging.info("Autoschedule enabled. Starting periodic scheduler...")
+        
+        # Initialize Scheduler for Periodic Execution
+        scheduler = Scheduler(
+            interval_minutes=args.interval,
+            job_func=process_fire_data,
+            config=config,
+            enable_aqi=not args.no_aqi,
+            enable_news=not args.no_news
+        )
 
-    # Start Scheduler
-    scheduler.start()
+        # Start Scheduler
+        scheduler.start()
 
-    # Keep the main thread alive.
-    try:
-        while True:
-            time.sleep(1)
-    except (KeyboardInterrupt, SystemExit):
-        scheduler.shutdown(None, None)
+        # Keep the main thread alive for scheduled execution
+        try:
+            while True:
+                time.sleep(1)
+        except (KeyboardInterrupt, SystemExit):
+            scheduler.shutdown(None, None)
+    else:
+        logging.info("Single run completed. Use crontab or --autoschedule for periodic execution.")
+        sys.exit(0)
 
 if __name__ == "__main__":
     main()
