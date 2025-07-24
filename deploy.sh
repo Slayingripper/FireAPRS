@@ -82,10 +82,10 @@ setup_crontab() {
     CURRENT_DIR=$(pwd)
     
     # Suggested crontab entry
-    CRON_ENTRY="0 */2 * * * cd $CURRENT_DIR && docker-compose up fire-aprs >> /tmp/fire-aprs-cron.log 2>&1"
+    CRON_ENTRY="0 * * * * cd $CURRENT_DIR && docker-compose up fire-aprs >> /tmp/fire-aprs-cron.log 2>&1"
     
     echo ""
-    print_status "To run FireAPRS every 2 hours via crontab, add this line to your crontab:"
+    print_status "To run FireAPRS every 60 minutes (hourly) via crontab, add this line to your crontab:"
     echo ""
     echo "$CRON_ENTRY"
     echo ""
