@@ -12,8 +12,6 @@ FireAPRS utilizes NASA's VIIRS satellite data to monitor and plot the locations 
   - [Installation](#installation)
   - [Configuration](#configuration)
     - [Configuration File Structure](#configuration-file-structure)
-      - [**Section Descriptions:**](#section-descriptions)
-    - [Environment Variables (Recommended for Sensitive Data)](#environment-variables-recommended-for-sensitive-data)
   - [Usage](#usage)
     - [Command-Line Arguments](#command-line-arguments)
     - [Running the Tool](#running-the-tool)
@@ -21,7 +19,6 @@ FireAPRS utilizes NASA's VIIRS satellite data to monitor and plot the locations 
       - [Automatic Scheduling Mode](#automatic-scheduling-mode)
       - [Crontab Setup Examples](#crontab-setup-examples)
     - [Example APRS Messages](#example-aprs-messages)
-  - [Environment Variables](#environment-variables)
   - [Logging](#logging)
   - [Troubleshooting](#troubleshooting)
     - [**1. Invalid Uncompressed Location Error on aprs.fi**](#1-invalid-uncompressed-location-error-on-aprsfi)
@@ -40,14 +37,13 @@ FireAPRS utilizes NASA's VIIRS satellite data to monitor and plot the locations 
 - **Customizable Messages:** Sends tailored APRS messages based on available data, including a default "No fires today" message when no active fires are detected.
 - **Configurable Scheduling:** Allows users to set the interval (in minutes) for periodic data fetching and APRS messaging.
 - **Flexible Configuration:** Easily define the geographical area of interest and adjust operational parameters via the `config.ini` file.
-- **Robust Logging:** Maintains detailed logs for monitoring and troubleshooting purposes.
 
 ## Installation
 
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/yourusername/FireAPRS.git
+   git clone https://github.com/slayingripper/FireAPRS.git
    cd FireAPRS
    ```
 
@@ -130,123 +126,7 @@ log_file = fire_aprs.log
   - `level`: Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`).
   - `log_file`: Path to the log file.
 
-### Environment Variables (Recommended for Sensitive Data)
-
-To enhance security, it's advisable to store sensitive information like APRS passwords and AQI tokens as environment variables instead of plain text in `config.ini`.
-
-1. **Modify `config.ini` to Use Placeholders:**
-
-   ```ini
-   [aprssend]
-   callsign = YOUR_CALLSIGN
-   password = ${APRS_PASSWORD}
-   comment = Fire Alert!!!
-   symbol = T
-   port = 14580
-
-   [AQI]
-   authtoken = ${AQI_AUTHTOKEN}
-   ```
-
-2. **Update `config.py` to Read Environment Variables:**
-
-   ```python
-   # fire_aprs_cli/config.py
-
-   import os
-   from configparser import ConfigParser
-   from pathlib import Path
-
-   class Config:
-       def __init__(self, config_path='config.ini'):
-           self.config = self.load_config(config_path)
-           self.validate_config()
-
-       @staticmethod
-       def load_config(config_path):
-           config = ConfigParser()
-           if not Path(config_path).is_file():
-               raise FileNotFoundError(f"Configuration file '{config_path}' not found.")
-           config.read(config_path)
-           return config
-
-       def validate_config(self):
-           required_sections = {
-               'viirs': ['url', 'filepath', 'latitude1', 'latitude2', 'longitude1', 'longitude2'],
-               'aprssend': ['callsign', 'password', 'comment', 'symbol', 'port'],
-               'AQI': ['authtoken'],
-               'newsfeed': ['link', 'keyword'],
-               'logging': ['level', 'log_file']
-           }
-
-           for section, keys in required_sections.items():
-               if not self.config.has_section(section):
-                   raise ValueError(f"Missing section '{section}' in config.ini")
-               for key in keys:
-                   if not self.config.has_option(section, key):
-                       raise ValueError(f"Missing option '{key}' in section '{section}' of config.ini")
-
-           # Additional validation for coordinates
-           latitude_limits = (-90.0, 90.0)
-           longitude_limits = (-180.0, 180.0)
-
-           for coord, (min_val, max_val) in [
-               ('latitude1', latitude_limits),
-               ('latitude2', latitude_limits),
-               ('longitude1', longitude_limits),
-               ('longitude2', longitude_limits)
-           ]:
-               value = self.config.getfloat('viirs', coord)
-               if not (min_val <= value <= max_val):
-                   raise ValueError(f"Invalid value for '{coord}': {value}. Must be between {min_val} and {max_val}.")
-
-       def get_viirs_config(self):
-           return {
-               'url': self.config.get('viirs', 'url'),
-               'filepath': self.config.get('viirs', 'filepath'),
-               'latitude1': self.config.getfloat('viirs', 'latitude1'),
-               'latitude2': self.config.getfloat('viirs', 'latitude2'),
-               'longitude1': self.config.getfloat('viirs', 'longitude1'),
-               'longitude2': self.config.getfloat('viirs', 'longitude2'),
-           }
-
-       def get_aprs_config(self):
-           return {
-               'callsign': self.config.get('aprssend', 'callsign'),
-               'password': os.getenv('APRS_PASSWORD', self.config.get('aprssend', 'password')),
-               'comment': self.config.get('aprssend', 'comment'),
-               'symbol': self.config.get('aprssend', 'symbol'),
-               'port': self.config.getint('aprssend', 'port'),
-           }
-
-       def get_aqi_config(self):
-           return {
-               'authtoken': os.getenv('AQI_AUTHTOKEN', self.config.get('AQI', 'authtoken')),
-           }
-
-       def get_newsfeed_config(self):
-           return {
-               'link': self.config.get('newsfeed', 'link'),
-               'keyword': self.config.get('newsfeed', 'keyword'),
-           }
-
-       def get_logging_config(self):
-           return {
-               'level': self.config.get('logging', 'level'),
-               'log_file': self.config.get('logging', 'log_file'),
-           }
-   ```
-
-3. **Set Environment Variables:**
-
-   ```bash
-   export APRS_PASSWORD=your_aprs_password
-   export AQI_AUTHTOKEN=your_aqi_token
-   ```
-
-   *Ensure these environment variables are set in your shell or defined in your deployment environment.*
-
-## Usage
+ Usage
 
 FireAPRS can be executed via the command line, offering flexibility through various flags to enable or disable certain features.
 
@@ -349,28 +229,6 @@ For single-run mode, you can use crontab to schedule the program:
 
 *Ensure that the coordinates are correctly formatted to avoid invalid location errors on APRS clients.*
 
-## Environment Variables
-
-For enhanced security, sensitive information such as APRS passwords and AQI tokens should be stored as environment variables.
-
-- **Set Environment Variables:**
-
-  ```bash
-  export APRS_PASSWORD=your_aprs_password
-  export AQI_AUTHTOKEN=your_aqi_token
-  ```
-
-- **Access in `config.ini`:**
-
-  ```ini
-  [aprssend]
-  password = ${APRS_PASSWORD}
-
-  [AQI]
-  authtoken = ${AQI_AUTHTOKEN}
-  ```
-
-*Ensure these environment variables are set in your shell or deployment environment before running FireAPRS.*
 
 ## Logging
 
